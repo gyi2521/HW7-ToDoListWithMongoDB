@@ -1,49 +1,51 @@
 const toDoList = require('../models/toDoList.js');
-let nextId = 0;
 
 module.exports = function (app) {
 
     app.get('/api/toDo', function (req, res) {
-        console.log(toDoList);
-        return res.json(toDoList);       
+        toDoList.find({})
+            .then(function (list) {
+                res.json(list);
+            })
+            .catch(function(err){
+                res.json(err);
+            })
     });
 
     app.post('/api/toDo', function (req, res) {
-
-        toDoList.push({itemId: nextId, done: false, task: req.body.task});
-        nextId++;
-        const confirmation = {success: true}
-        
-        return res.json(confirmation);
+        toDoList.create({ "task": req.body.taskItem })
+            .then(function (result) {
+                console.log(result);
+                res.json({ success: true });
+            })
+            .catch(function (err) {
+                console.log(err.message);
+                res.json({ success: false });
+            });
     });
 
     app.delete('/api/toDo/:index', function (req, res) {
-        console.log(req.params.index);
-        let taskLoc = toDoList.findIndex(e => e.itemId == req.params.index);
-        console.log(taskLoc);
-        
-        let confirmation = {success: false};
-        if (taskLoc > -1){
-            toDoList.splice(taskLoc,1);
-            confirmation = {success: true};
-         } 
-         console.log(confirmation);
-        return res.json(confirmation); 
-        
+        toDoList.findByIdAndDelete({ _id: req.params.index })
+            .then(function (result) {
+                res.json({ success: true });
+            })
+            .catch(function (err) {
+                console.log(err.message);
+                res.json({ success: err.message });
+            });
+
     });
 
     app.put('/api/toDo', function (req, res) {
-        let foundTask = toDoList.find(e => e.itemId == req.body.itemId);
-        if (foundTask != null) { 
-            if(req.body.done == 'false')
-                foundTask.done = false;
-            else
-                foundTask.done = true;
-            const confirmation = {success: true};
-            return res.json(confirmation);
-        }else{
-            const confirmation = {success: false};
-            return res.json(confirmation);
-        }
+        toDoList.findOneAndUpdate({ _id: req.body._id },
+            { $set: { done: req.body.done } })
+            .then(function (result) {
+                res.json({ success: true });
+            })
+            .catch(function (err) {
+                console.log(err.message);
+                res.json({ success: false });
+            });
+
     });
 }

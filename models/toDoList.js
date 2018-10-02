@@ -4,14 +4,15 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const toDoSchema = new Schema({
-    itemId: {
-        type: Number,
-        unique: true,
-        required: true
-    },
     task: {
         type: String,
+        trim: true,
         required: true
+    },
+    done: {
+        type: Boolean,
+        required: true,
+        default: false
     }
 })
 
